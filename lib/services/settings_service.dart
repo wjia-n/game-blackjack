@@ -58,7 +58,7 @@ class BlackjackSettings extends ChangeNotifier {
   bool musicOn = true;
   bool sfxOn = true;
   double volume = 0.8;
-  bool isPro = false;
+  bool isPro = true; // everything unlocked — no Pro version
   Map<String, int> customColors = Map.of(_defaultCustomColors);
 
   // Lifetime stats.
