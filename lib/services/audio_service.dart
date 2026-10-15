@@ -15,6 +15,9 @@ import 'package:audioplayers/audioplayers.dart';
 ///   left off.
 /// - Every public method catches player errors; audio can never crash the app.
 class BlackjackAudio {
+  /// Per-game pitch character (blackjack): 1.18x. Makes SFX unique.
+  static const double _pitchMul = 1.180;
+
   static const int _rate = 22050;
   final AudioPlayer _sfx = AudioPlayer();
   final AudioPlayer _music = AudioPlayer();
@@ -96,6 +99,8 @@ class BlackjackAudio {
 
   List<double> _tone(double freq, double secs,
       {double freqEnd = 0, double attack = 0.02, double harmonics = 0.25}) {
+    freq *= _pitchMul;
+    freqEnd *= _pitchMul;
     final n = (_rate * secs).round();
     final out = List<double>.filled(n, 0);
     for (int i = 0; i < n; i++) {
@@ -254,55 +259,44 @@ class BlackjackAudio {
       _cache.putIfAbsent(key, () => _wav(build()));
 
   Uint8List _menuBytes() => _clip('music_menu', () {
-        // Lounge swing: walking bass under soft brass-ish chords, 16s loop.
-        final roots = [110.0, 130.81, 98.0, 87.31]; // A C G F walk
-        final bass = _swingBass(roots, 1.0); // 8 beats = 8s? extend below
-        final chords = [
-          [220.0, 277.18, 329.63], // A
-          [261.63, 329.63, 392.0], // C
-          [196.0, 246.94, 293.66], // G
-          [174.61, 220.0, 261.63], // F
-        ];
-        final n = (_rate * 16).round();
-        final out = List<double>.filled(n, 0);
-        final bassRep = [...bass, ...bass];
-        for (int i = 0; i < bassRep.length && i < n; i++) {
-          out[i] += bassRep[i] * 0.4;
+        // F# arpeggiated 0 – 2 – 5 – 4, 16s loop. Unique to blackjack.
+        final notes = [185.00, 233.08, 277.18, 233.08, 233.08, 277.18, 349.22, 277.18, 311.12, 369.99, 466.16, 369.99, 277.18, 349.22, 415.30, 349.22];
+        final out = <double>[];
+        final noteLen = 16.0 / notes.length;
+        for (final n in notes) {
+          out.addAll(_tone(n, noteLen * 0.9, harmonics: 0.3));
+          final gap = List<double>.filled((_rate * noteLen * 0.1).round(), 0);
+          out.addAll(gap);
         }
-        for (int c = 0; c < chords.length; c++) {
-          final start = (n * c / 4).round();
-          final pad = _padChord(chords[c], 4.0);
-          for (int i = 0; i < pad.length && start + i < n; i++) {
-            out[start + i] += pad[i] * 0.35;
+        // Soft pad underneath
+        final pad = _padChord([185.00, 233.08, 277.18], 16.0);
+        for (int i = 0; i < out.length && i < pad.length; i++) {
+          out[i] += pad[i] * 0.3;
+        }
+        return out;
+      });
+
+
+  Uint8List _gameBytes() => _clip('music_game', () {
+        // F# bass + melody 0 – 2 – 5 – 4, 16s loop. Unique to blackjack.
+        final bassNotes = [92.50, 116.54, 155.56, 138.59];
+        final melNotes = [554.36, 698.44, 932.32, 830.60];
+        final out = List<double>.filled((_rate * 16).round(), 0);
+        final segLen = (_rate * 4).round();
+        for (int s = 0; s < 4; s++) {
+          final bass = _tone(bassNotes[s], 3.5, harmonics: 0.4);
+          final mel = _tone(melNotes[s], 1.2, harmonics: 0.25);
+          for (int i = 0; i < bass.length && s * segLen + i < out.length; i++) {
+            out[s * segLen + i] += bass[i] * 0.5;
+          }
+          final melStart = s * segLen + segLen ~/ 4;
+          for (int i = 0; i < mel.length && melStart + i < out.length; i++) {
+            out[melStart + i] += mel[i] * 0.35;
           }
         }
         return out;
       });
 
-  Uint8List _gameBytes() => _clip('music_game', () {
-        // Soft late-night lounge: low piano-ish arps over a felt drone, 12s.
-        final drone = _padChord([82.41, 123.47], 12.0);
-        final notes = [
-          220.0,
-          261.63,
-          293.66,
-          329.63,
-          293.66,
-          261.63,
-          246.94,
-          220.0
-        ];
-        final n = (_rate * 12).round();
-        final out = List<double>.from(drone);
-        for (int k = 0; k < notes.length; k++) {
-          final start = (n * k / notes.length).round();
-          final tone = _tone(notes[k], 0.6, harmonics: 0.3);
-          for (int i = 0; i < tone.length && start + i < n; i++) {
-            out[start + i] += tone[i] * 0.28;
-          }
-        }
-        return out;
-      });
 
   // ------------------------------------------------------------------ SFX
   Future<void> _play(Uint8List bytes) async {

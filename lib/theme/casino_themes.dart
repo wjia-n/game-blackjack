@@ -159,7 +159,7 @@ class CasinoThemes {
     ),
     CasinoThemeDef(
       id: 'atlantic',
-      name: 'Atlantic Navy',
+      name: 'Deep Navy',
       felt: Color(0xFF16324F),
       feltDeep: Color(0xFF0D2036),
       rail: Color(0xFF3E3226),

@@ -57,10 +57,10 @@ bool isBlackjack(List<BjCard> hand) =>
 enum DealerStyle { friendly, classic, highRoller }
 
 extension DealerStyleInfo on DealerStyle {
-  String get name => ['Friendly Flo', 'Classic Vegas', 'High Roller'][index];
+  String get name => ['Friendly Flo', 'Lucky Ace', 'High Roller'][index];
   String get blurb => [
         'Stands on all 17s · lets you surrender · no insurance tricks. The easy table.',
-        'Hits soft 17 · offers insurance. The real Vegas rules.',
+        'Hits soft 17 · offers insurance. The real casino rules.',
         'Hits soft 17 · insurance offered · deep 6-deck shoe. Not for the faint of heart.',
       ][index];
   bool get hitsSoft17 => this != DealerStyle.friendly;
