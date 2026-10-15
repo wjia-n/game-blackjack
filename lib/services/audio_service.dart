@@ -229,15 +229,6 @@ class BlackjackAudio {
     return out;
   }
 
-  List<double> _swingBass(List<double> roots, double beatSecs) {
-    final out = <double>[];
-    for (final r in roots) {
-      out.addAll(_tone(r, beatSecs * 0.55, harmonics: 0.35));
-      out.addAll(_tone(r * 1.5, beatSecs * 0.45, harmonics: 0.3));
-    }
-    return out;
-  }
-
   List<double> _padChord(List<double> freqs, double secs) {
     final n = (_rate * secs).round();
     final out = List<double>.filled(n, 0);
