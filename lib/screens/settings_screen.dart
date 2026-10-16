@@ -3,6 +3,7 @@ import '../services/audio_service.dart';
 import '../services/settings_service.dart';
 import '../theme/casino_themes.dart';
 import '../theme/casino_ui.dart';
+import '../transfer/transfer_ui.dart';
 
 /// Settings: audio, volume, renameable seat names, stats, resets.
 class SettingsScreen extends StatefulWidget {
@@ -76,6 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+              TransferSaveTile(gameSlug: 'blackjack'),
                   _section(t, 'SOUND'),
                   _switchRow(
                     t,
